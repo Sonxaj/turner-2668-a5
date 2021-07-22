@@ -7,6 +7,7 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
 
@@ -14,37 +15,42 @@
   <items>
       <MenuBar prefHeight="28.0" prefWidth="600.0">
         <menus>
-          <Menu mnemonicParsing="false" text="File">
+          <Menu mnemonicParsing="false" text="Import">
             <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
+              <MenuItem fx:id="openTSV" mnemonicParsing="false" text="Open TSV" />
+                  <MenuItem fx:id="openJSON" mnemonicParsing="false" text="Open JSON" />
+                  <MenuItem fx:id="openHTML" mnemonicParsing="false" text="Open HTML" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
+          <Menu mnemonicParsing="false" text="Export">
             <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
+              <MenuItem fx:id="saveTSV" mnemonicParsing="false" text="Save as TSV" />
+                  <MenuItem fx:id="saveJSON" mnemonicParsing="false" text="Save as JSON" />
+                  <MenuItem fx:id="saveHTML" mnemonicParsing="false" text="Save as HTML" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+              <MenuItem fx:id="showHelp" mnemonicParsing="false" text="About" />
             </items>
           </Menu>
         </menus>
       </MenuBar>
     <AnchorPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="50.0">
          <children>
-            <SplitMenuButton layoutX="29.0" layoutY="11.0" mnemonicParsing="false" text="Add Item" AnchorPane.bottomAnchor="13.0" AnchorPane.topAnchor="11.0">
+            <SplitMenuButton fx:id="addButton" layoutX="29.0" layoutY="11.0" mnemonicParsing="false" text="Add Item" AnchorPane.bottomAnchor="13.0" AnchorPane.topAnchor="11.0">
               <items>
-                <MenuItem mnemonicParsing="false" text="Remove Item" />
+                <MenuItem fx:id="delButton" mnemonicParsing="false" text="Remove Item" />
               </items>
             </SplitMenuButton>
+            <TextField fx:id="searchField" layoutX="149.0" layoutY="12.0" prefHeight="26.0" prefWidth="436.0" promptText="Search" AnchorPane.bottomAnchor="12.0" AnchorPane.leftAnchor="149.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="12.0" />
          </children>
       </AnchorPane>
-      <TableView editable="true" tableMenuButtonVisible="true">
+      <TableView fx:id="inventoryView" editable="true" tableMenuButtonVisible="true">
         <columns>
-          <TableColumn prefWidth="150.0" resizable="false" text="Price" />
-          <TableColumn prefWidth="-1.0" text="Name" />
-            <TableColumn prefWidth="-1.0" text="Serial Number" />
+          <TableColumn fx:id="priceColumn" minWidth="-1.0" prefWidth="-1.0" text="Price" />
+          <TableColumn fx:id="nameColumn" prefWidth="-1.0" text="Name" />
+            <TableColumn fx:id="serialColumn" prefWidth="-1.0" text="Serial Number" />
         </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

@@ -11,16 +11,17 @@ public class Item {
 
     // item details
     private BigDecimal value; // recommended over float and double for rounding reasons
-    private int serialNumber;
     private String name;
+    private int serialNumber;
 
-    public Item(BigDecimal value, int serialNumber, String name){
+
+    public Item(BigDecimal value, String name, int serialNumber){
         this.value = value;
-
-        this.serialNumber = serialNumber;
 
         // characters in length is [2, 256]
         this.name = name;
+
+        this.serialNumber = serialNumber;
     }
 
 
