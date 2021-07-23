@@ -6,42 +6,43 @@
 package ucf.assignments;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 public class Item {
 
     // item details
-    private BigDecimal value; // recommended over float and double for rounding reasons
+    private String value; // recommended over float and double for rounding reasons
     private String name;
-    private int serialNumber;
+    private String serialNumber;
 
 
-    public Item(BigDecimal value, String name, int serialNumber){
-        this.value = value;
+    public Item(BigDecimal value, String name, String serialNumber){
+        this.value = "$" + value.toString();
 
         // characters in length is [2, 256]
         this.name = name;
 
-        this.serialNumber = serialNumber;
+        this.serialNumber = serialNumber.toUpperCase(Locale.ROOT);
     }
 
 
 
     // gets and sets
 
-    public BigDecimal getValue() {
+    public String getValue() {
         return value;
     }
 
     public void setValue(BigDecimal value) {
-        this.value = value;
+        this.value = value.toString();
     }
 
-    public int getSerialNumber() {
+    public String getSerialNumber() {
         return serialNumber;
     }
 
-    public void setSerialNumber(int serialNumber) {
-        this.serialNumber = serialNumber;
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber.toUpperCase(Locale.ROOT);
     }
 
     public String getName() {

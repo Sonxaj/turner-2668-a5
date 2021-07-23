@@ -17,6 +17,7 @@ import java.util.Scanner;
 // class responsible for all file operations
 
 public class InvFileManager {
+
     private FileChooser fileChooser;
 
     public InvFileManager(String type){
