@@ -16,12 +16,15 @@ public class Item {
     private String serialNumber;
 
 
-    public Item(BigDecimal value, String name, String serialNumber){
+    public Item(BigDecimal value, String serialNumber, String name){
+        super();
+
         this.value = "$" + value.toString();
 
         // characters in length is [2, 256]
         this.name = name;
 
+        // serial number should be uppercase
         this.serialNumber = serialNumber.toUpperCase(Locale.ROOT);
     }
 

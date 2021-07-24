@@ -10,22 +10,22 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<SplitPane dividerPositions="0.05760709010339734, 0.1432791728212703, 0.22304283604135894" orientation="VERTICAL" prefHeight="679.0" prefWidth="810.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ucf.assignments.InventoryController">
+<SplitPane fx:id="splitPane" dividerPositions="0.05760709010339734, 0.1432791728212703, 0.22304283604135894" orientation="VERTICAL" prefHeight="679.0" prefWidth="810.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ucf.assignments.InventoryController">
   <items>
       <MenuBar prefHeight="28.0" prefWidth="600.0">
         <menus>
           <Menu mnemonicParsing="false" text="Import">
             <items>
-              <MenuItem fx:id="openTSV" mnemonicParsing="false" text="Open TSV" />
-                  <MenuItem fx:id="openJSON" mnemonicParsing="false" text="Open JSON" />
-                  <MenuItem fx:id="openHTML" mnemonicParsing="false" text="Open HTML" />
+              <MenuItem fx:id="openTSV" mnemonicParsing="false" onAction="#openTSV" text="Open TSV" />
+                  <MenuItem fx:id="openJSON" mnemonicParsing="false" onAction="#openJSON" text="Open JSON" />
+                  <MenuItem fx:id="openHTML" mnemonicParsing="false" onAction="#openHTML" text="Open HTML" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Export">
             <items>
-              <MenuItem fx:id="saveTSV" mnemonicParsing="false" text="Save as TSV" />
-                  <MenuItem fx:id="saveJSON" mnemonicParsing="false" text="Save as JSON" />
-                  <MenuItem fx:id="saveHTML" mnemonicParsing="false" text="Save as HTML" />
+              <MenuItem fx:id="saveTSV" mnemonicParsing="false" onAction="#saveTSV" text="Save as TSV" />
+                  <MenuItem fx:id="saveJSON" mnemonicParsing="false" onAction="#saveJSON" text="Save as JSON" />
+                  <MenuItem fx:id="saveHTML" mnemonicParsing="false" onAction="#saveHTML" text="Save as HTML" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">

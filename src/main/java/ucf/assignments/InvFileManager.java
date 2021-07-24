@@ -5,20 +5,29 @@
 
 package ucf.assignments;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.SplitPane;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.security.cert.Extension;
+import java.util.List;
 import java.util.Scanner;
+
+import com.google.gson.Gson;
 
 // class responsible for all file operations
 
 public class InvFileManager {
 
-    private FileChooser fileChooser;
+    public FileChooser fileChooser;
 
     public InvFileManager(String type){
         this.fileChooser = new FileChooser();
@@ -29,32 +38,113 @@ public class InvFileManager {
         if(type.equalsIgnoreCase("tsv")){
             FileChooser.ExtensionFilter extensionFilter =
             new FileChooser.ExtensionFilter("TSV files (*.tsv)", "*.tsv");
+            this.fileChooser.getExtensionFilters().add(extensionFilter);
 
         // json
         }else if (type.equalsIgnoreCase("json")){
             FileChooser.ExtensionFilter extensionFilter =
             new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+            this.fileChooser.getExtensionFilters().add(extensionFilter);
 
         // html
         }else{
             FileChooser.ExtensionFilter extensionFilter =
             new FileChooser.ExtensionFilter("HTML files (*.html)", "*.html");
-
+            this.fileChooser.getExtensionFilters().add(extensionFilter);
         }
+
+
     }
 
-    // save operations
-    public void saveInventoryAsTSV(File fileToSave){
-        String fileText = "";
 
-        // set up text to write to file as TSV; uses data from controller
+    // data converters; takes data from internal list and makes string for saving
 
+    // TSV
+    public String dataConverterTSV(ObservableList<Item> inventoryData){
+        // create out
+        String out = "";
+
+        // loop thru data; print as TSV
+        for(Item item: inventoryData){
+            out +=  item.getValue() + "\t" +
+                    item.getSerialNumber() + "\t" +
+                    item.getName() + "\n";
+        }
+        return out;
+    }
+
+    // JSON
+    public String dataConverterJSON(ObservableList<Item> inventoryData){
+        // create out
+        String out = "";
+
+        // create object mapper
+        ObjectMapper mapper = new ObjectMapper();
+
+        // convert each item and write to string
+        for(Item item: inventoryData){
+            try {
+                out += mapper.writeValueAsString(item) + "\n";
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return out;
+    }
+
+    // HTML
+    public String dataConverterHTML(ObservableList<Item> inventoryData){
+        // create out
+        String out = "";
+        String data = "";
+
+
+        // setup data for html
+        for(Item item: inventoryData){
+            data += "\t<tr>" + "\n" +
+                    "\t\t<td>" + item.getValue() + "</td>\n" +
+                    "\t\t<td>" + item.getSerialNumber() + "</td>\n" +
+                    "\t\t<td>" + item.getName() + "</td>\n" +
+                    "\t</tr>" + "\n";
+        }
+
+        // setup html; insert data into table data tag
+        out +=  "<!DOCTYPE html>" + "\n" +
+                "<html>" + "\n" +
+                "<head>" + "\n" +
+                    "\t<meta charset =\"utf-8\" />" + "\n" +
+                    "\t<title>Inventory</title>\n" +
+                    "\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" + "\n" +
+                "</head>" + "\n" +
+                "<body>" + "\n\n" +
+                    "<table>" + "\n" +
+
+                        // first row header
+                        "\t<tr>" + "\n" +
+                            "\t\t<th>Value:</th>" + "\n" +
+                            "\t\t<th>Serial Number:</th>" + "\n" +
+                            "\t\t<th>Name:</th>" + "\n" +
+                        "\t</tr>" + "\n" +
+
+                        // data; line 16
+                        data +
+
+                    "</table>" + "\n";
+        return out;
+    }
+
+
+    // save operation
+
+    public void saveInventory(File fileToSave, String textToSave){
         try{
             // write all the data to file
             FileWriter fileWriter = new FileWriter(fileToSave);
             PrintWriter printWriter = new PrintWriter(fileWriter);
 
-            printWriter.write(fileText);
+            printWriter.write(textToSave);
 
             // close writers
             printWriter.close();
@@ -63,86 +153,165 @@ public class InvFileManager {
         } catch (IOException e){
             e.printStackTrace();
         }
-
     }
 
-    public void saveInventoryAsJSON(File fileToSave){
-        String fileText = "";
-
-        // set up text to write to file as JSON
-
-        try{
-            // write all the data to file
-            FileWriter fileWriter = new FileWriter(fileToSave);
-            PrintWriter printWriter = new PrintWriter(fileWriter);
-
-            printWriter.write(fileText);
-
-            // close writers
-            printWriter.close();
-            fileWriter.close();
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public void saveInventoryAsHTML(File fileToSave){
-        String fileText = "";
-
-        // set up text to write to file as HTML
-
-        try{
-            // write all the data to file
-            FileWriter fileWriter = new FileWriter(fileToSave);
-            PrintWriter printWriter = new PrintWriter(fileWriter);
-
-            printWriter.write(fileText);
-
-            // close writers
-            printWriter.close();
-            fileWriter.close();
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-    }
 
 
     // load operations
-    public void loadTSV(File fileToLoad){
+
+    // TSV
+    public void loadTSV(File fileToLoad, ObservableList<Item> inventoryData){
         try{
             // assuming we got the file, start reading data
             Scanner reader = new Scanner(fileToLoad);
 
             // parse data
+            while (reader.hasNextLine()){
+
+                // split into string array
+                String[] currentLine = reader.nextLine().split("\t");
+
+                // create item using data
+                String decimal = currentLine[0].replace("$", "");
+                Item item = new Item(new BigDecimal(decimal), currentLine[1], currentLine[2]);
+
+                // add to list
+                inventoryData.add(item);
+            }
 
         }catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    public void loadJSON(File fileToLoad){
+    // JSON
+    public void loadJSON(File fileToLoad, ObservableList<Item> inventoryData){
         try{
             // assuming we got the file, start reading data
             Scanner reader = new Scanner(fileToLoad);
 
-            // parse data
+            // create object mapper
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            while (reader.hasNextLine()){
+                // store current line
+                String currentLine = reader.nextLine();
+
+                // clean out JSON garbage; set up tab delimiter
+                currentLine = currentLine.replace("{", "");
+                currentLine = currentLine.replace("}", "");
+                currentLine = currentLine.replace("\"value\":\"$", "");
+                currentLine = currentLine.replace("\",", "");
+                currentLine = currentLine.replace("\"name\":\"", "\t");
+                currentLine = currentLine.replace("\"serialNumber\":\"", "\t");
+                currentLine = currentLine.replace("\"", "");
+
+                // split current string
+                String[] chunk = currentLine.split("\t");
+
+                // create object using data from JSON
+                String decimal = chunk[0].replace("$", "");
+                Item item = new Item(new BigDecimal(decimal), chunk[1], chunk[2]);
+
+                // add to list
+                inventoryData.add(item);
+            }
 
         }catch (IOException e){
             e.printStackTrace();
         }
     }
 
-    public void loadHTML(File fileToLoad){
+    // HTML
+    public void loadHTML(File fileToLoad, ObservableList<Item> inventoryData){
+        // line number for determining start point
+        int line = 1;
+
+        // string for storing data
+        String data = "";
+
+        // flags for starting and clearing cache
+        boolean isItemAdded = false;
+        boolean start = false;
+
         try{
             // assuming we got the file, start reading data
             Scanner reader = new Scanner(fileToLoad);
 
+            // clear current data
+            inventoryData.removeAll(inventoryData);
+            System.out.println("inventory cleared\n");
+
             // parse data
+            while(reader.hasNextLine()){
+
+                // store current line
+                String currentLine = reader.nextLine();
+
+                // flag to avoid very first header tags
+                if(line == 16){
+                    start = true;
+                }
+
+                // check if current line will contain data
+                if(currentLine.contains("<td>") && start){
+
+                    // take current line's data; # as delimiter
+                    data += currentLine + "#";
+
+                }
+
+                // now to create object with data
+                if(currentLine.contains("</tr>") && start){
+
+                    // clean out the tabs, tags, and dollar sign so only what's needed remains
+                    data = data.replace("\t\t", "");
+                    data = data.replace("<td>", "");
+                    data = data.replace("</td>", "");
+                    data = data.replace("$", "");
+
+                    // split using delimiter
+                    String[] chunk = data.split("#");
+
+                    // create item using parsed data
+                    String valueString = chunk[0];
+                    BigDecimal value = new BigDecimal(valueString);
+
+                    String serialNumber = chunk[1];
+                    String name = chunk[2];
+
+                    Item item = new Item(value, serialNumber, name);
+
+                    // add to list
+                    inventoryData.add(item);
+                    isItemAdded = true;
+                }
+
+                // clear current line cache if operation was completed
+                if (isItemAdded && start){
+                    data = "";
+                    isItemAdded = false;
+                }
+
+                // increment line count
+                line++;
+            }
 
         }catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    // window setup
+    public Stage windowSetup(SplitPane splitPane, String operation){
+        String text;
+        if(operation.equalsIgnoreCase("save")){
+            text = "Save Inventory";
+        }else{
+            text = "Load Inventory";
+        }
+
+        this.fileChooser.setTitle(text);
+        return (Stage)splitPane.getScene().getWindow();
     }
 }

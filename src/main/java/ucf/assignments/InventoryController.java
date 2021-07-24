@@ -14,12 +14,16 @@ import javafx.scene.control.*;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.stage.Stage;
 
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+
 
 public class InventoryController implements Initializable {
 
@@ -30,6 +34,11 @@ public class InventoryController implements Initializable {
 
 
     // FXML
+
+    // for the file choosers in the file manager
+    @FXML
+    SplitPane splitPane;
+
     // tableview
     @FXML
     TableView<Item> inventoryView;
@@ -109,31 +118,96 @@ public class InventoryController implements Initializable {
     // file stuff
 
     // save to file
+    @FXML
     public void saveTSV(ActionEvent actionEvent){
 
+        // set up data
+        String dataToWrite = tsvManager.dataConverterTSV(inventoryData);
+
+        // set up window
+        Stage stage = tsvManager.windowSetup(splitPane, "save");
+
+        // make file
+        File fileSave = tsvManager.fileChooser.showSaveDialog(stage);
+
+        // write data to file
+        if(fileSave != null){
+            tsvManager.saveInventory(fileSave, dataToWrite);
+        }
     }
 
+    @FXML
     public void saveJSON(ActionEvent actionEvent){
+        String dataToWrite = jsonManager.dataConverterJSON(inventoryData);
 
+        Stage stage = jsonManager.windowSetup(splitPane, "save");
+
+        File fileToSave = jsonManager.fileChooser.showSaveDialog(stage);
+
+        if(fileToSave != null){
+            jsonManager.saveInventory(fileToSave, dataToWrite);
+        }
     }
 
+    @FXML
     public void saveHTML(ActionEvent actionEvent){
+        String dataToWrite = htmlManager.dataConverterHTML(inventoryData);
 
+        Stage stage = htmlManager.windowSetup(splitPane, "save");
+
+        File fileSave = htmlManager.fileChooser.showSaveDialog(stage);
+
+        if(fileSave != null){
+            htmlManager.saveInventory(fileSave, dataToWrite);
+        }
     }
 
 
 
     // load from file
+    @FXML
     public void openTSV(ActionEvent actionEvent){
+        // setup window
+        Stage stage = tsvManager.windowSetup(splitPane, "load");
 
+        File fileLoad = tsvManager.fileChooser.showOpenDialog(stage);
+
+        // load file
+        if(fileLoad != null){
+            inventoryData.removeAll(inventoryData);
+            tsvManager.loadTSV(fileLoad, inventoryData);
+        }
+
+        // update gui
+        updateItemView();
     }
 
+    @FXML
     public void openJSON(ActionEvent actionEvent){
+        Stage stage = jsonManager.windowSetup(splitPane, "load");
 
+        File fileToLoad = jsonManager.fileChooser.showOpenDialog(stage);
+
+        if(fileToLoad != null){
+            inventoryData.removeAll(inventoryData);
+            jsonManager.loadJSON(fileToLoad, inventoryData);
+        }
+
+        updateItemView();
     }
 
+    @FXML
     public void openHTML(ActionEvent actionEvent){
+        Stage stage = htmlManager.windowSetup(splitPane, "load");
 
+        File fileLoad = htmlManager.fileChooser.showOpenDialog(stage);
+
+        if(fileLoad != null){
+            inventoryData.removeAll(inventoryData);
+            htmlManager.loadHTML(fileLoad, inventoryData);
+        }
+
+        updateItemView();
     }
 
 
@@ -147,7 +221,7 @@ public class InventoryController implements Initializable {
 
         // the value text is invalid if there's no '.' or it contains something not a number
         // or if its empty
-        if(!stringCheckForNumbers(valueText.getText()) || valueText.getText().length() == 0){
+        if(!stringCheckNumbers(valueText.getText()) || valueText.getText().length() == 0){
 
             // tell user to input valid dollar amount
             System.out.println("failed check for numbers\n");
@@ -155,7 +229,7 @@ public class InventoryController implements Initializable {
         }
 
         // serial numbers are purely alphanumeric, so check this too
-        if(!stringCheckForAlphanumeric(serialNumberText.getText()) || valueText.getText().length() == 0){
+        if(!stringCheckAlphanumeric(serialNumberText.getText()) || valueText.getText().length() == 0){
 
             // tell user to input valid serial number string
             System.out.println("failed check for alphanum\n");
@@ -204,7 +278,7 @@ public class InventoryController implements Initializable {
         Item item = inventoryView.getSelectionModel().getSelectedItem();
 
         // check the new input
-        if(stringCheckForNumbers(editText)){
+        if(stringCheckNumbers(editText)){
             // make big decimal for input
             BigDecimal input = new BigDecimal(editText);
 
@@ -232,7 +306,7 @@ public class InventoryController implements Initializable {
         }else{
 
             // now check input content
-            if(!stringCheckForAlphanumeric(editText)){
+            if(!stringCheckAlphanumeric(editText)){
 
                 // tell user input content is not accepted
                 return;
@@ -255,7 +329,7 @@ public class InventoryController implements Initializable {
         Item item = inventoryView.getSelectionModel().getSelectedItem();
 
         // update serial number field; check if alphanumeric
-        if(stringCheckForAlphanumeric(editText)){
+        if(stringCheckAlphanumeric(editText)){
             item.setSerialNumber(editText);
 
         }else{
@@ -270,8 +344,8 @@ public class InventoryController implements Initializable {
     // input checking
 
     // checks a string if its purely alphanumeric;
-    // returns true if a string; false if not
-    public boolean stringCheckForAlphanumeric(String toCheck){
+    // returns true if alphanumeric; false if not
+    public boolean stringCheckAlphanumeric(String toCheck){
 
         // flag for checking
         boolean flag = false;
@@ -284,7 +358,7 @@ public class InventoryController implements Initializable {
 
     // checks a string if its purely numerical or a ".";
     // returns true if a string; false if not
-    public boolean stringCheckForNumbers(String toCheck){
+    public boolean stringCheckNumbers(String toCheck){
 
         // flag for checking
         boolean flag = false;
@@ -295,8 +369,6 @@ public class InventoryController implements Initializable {
 
         return flag;
     }
-
-
 
 
     // updates tableview with current data
