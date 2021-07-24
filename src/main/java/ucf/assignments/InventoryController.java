@@ -219,12 +219,14 @@ public class InventoryController implements Initializable {
 
         // check inputs first
 
-        // the value text is invalid if there's no '.' or it contains something not a number
-        // or if its empty
+        /*
+            the value text is invalid if there's no '.' or it contains something not a number
+            or if its empty
+         */
+
         if(!stringCheckNumbers(valueText.getText()) || valueText.getText().length() == 0){
 
             // tell user to input valid dollar amount
-            System.out.println("failed check for numbers\n");
             return;
         }
 
@@ -232,12 +234,10 @@ public class InventoryController implements Initializable {
         if(!stringCheckAlphanumeric(serialNumberText.getText()) || valueText.getText().length() == 0){
 
             // tell user to input valid serial number string
-            System.out.println("failed check for alphanum\n");
             return;
         }
 
         // if we get here, we're good to go
-
         // get inputs
         BigDecimal value = new BigDecimal(valueText.getText());
         String name = nameText.getText();
@@ -251,7 +251,6 @@ public class InventoryController implements Initializable {
 
         // update gui
         updateItemView();
-        System.out.println("added successfully\n");
     }
 
     public void delItem(ActionEvent actionEvent){

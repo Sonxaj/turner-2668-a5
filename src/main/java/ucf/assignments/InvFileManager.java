@@ -6,23 +6,16 @@
 package ucf.assignments;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.*;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.SplitPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.math.BigDecimal;
-import java.security.cert.Extension;
-import java.util.List;
 import java.util.Scanner;
-
-import com.google.gson.Gson;
-
 // class responsible for all file operations
 
 public class InvFileManager {
@@ -75,21 +68,23 @@ public class InvFileManager {
 
     // JSON
     public String dataConverterJSON(ObservableList<Item> inventoryData){
-        // create out
-        String out = "";
 
-        // create object mapper
+        // create out
+        String out = "{\n" +
+                "\"inventory\":";
+
+        // object mapper
         ObjectMapper mapper = new ObjectMapper();
 
-        // convert each item and write to string
-        for(Item item: inventoryData){
-            try {
-                out += mapper.writeValueAsString(item) + "\n";
+        try {
+            // write inventory as json
+            out += mapper.writerWithDefaultPrettyPrinter().writeValueAsString(inventoryData);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        out += "}";
 
         return out;
     }
@@ -136,7 +131,8 @@ public class InvFileManager {
     }
 
 
-    // save operation
+
+    // save operations
 
     public void saveInventory(File fileToSave, String textToSave){
         try{
@@ -154,7 +150,6 @@ public class InvFileManager {
             e.printStackTrace();
         }
     }
-
 
 
     // load operations
@@ -185,42 +180,37 @@ public class InvFileManager {
     }
 
     // JSON
-    public void loadJSON(File fileToLoad, ObservableList<Item> inventoryData){
+    public void loadJSON(File fileToLoad, ObservableList<Item> inventoryData) {
         try{
-            // assuming we got the file, start reading data
-            Scanner reader = new Scanner(fileToLoad);
+            // json object
+            JsonObject inputJson = JsonParser.parseReader(new FileReader(fileToLoad)).getAsJsonObject();
 
-            // create object mapper
-            ObjectMapper objectMapper = new ObjectMapper();
+            // setup as json array
+            JsonArray jsonArray = inputJson.get("inventory").getAsJsonArray();
 
-            while (reader.hasNextLine()){
-                // store current line
-                String currentLine = reader.nextLine();
+            for(JsonElement itemJson: jsonArray){
+                // get current item as object
+                JsonObject itemObj = itemJson.getAsJsonObject();
 
-                // clean out JSON garbage; set up tab delimiter
-                currentLine = currentLine.replace("{", "");
-                currentLine = currentLine.replace("}", "");
-                currentLine = currentLine.replace("\"value\":\"$", "");
-                currentLine = currentLine.replace("\",", "");
-                currentLine = currentLine.replace("\"name\":\"", "\t");
-                currentLine = currentLine.replace("\"serialNumber\":\"", "\t");
-                currentLine = currentLine.replace("\"", "");
+                // create item using parsed data
+                String valueString = itemObj.get("value").getAsString().replace("$", "");
+                BigDecimal value = new BigDecimal(valueString);
+                String name = itemObj.get("name").getAsString();
+                String serialNumber = itemObj.get("serialNumber").getAsString();
 
-                // split current string
-                String[] chunk = currentLine.split("\t");
+                // create item
+                Item item = new Item(value, serialNumber, name);
 
-                // create object using data from JSON
-                String decimal = chunk[0].replace("$", "");
-                Item item = new Item(new BigDecimal(decimal), chunk[1], chunk[2]);
-
-                // add to list
+                // add item to data
                 inventoryData.add(item);
             }
 
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
+
         }
     }
+
 
     // HTML
     public void loadHTML(File fileToLoad, ObservableList<Item> inventoryData){
