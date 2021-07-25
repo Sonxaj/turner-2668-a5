@@ -8,8 +8,6 @@ package ucf.assignments;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -23,17 +21,18 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class InventoryController implements Initializable {
 
     // file managers for file operations
-    private InvFileManager tsvManager = new InvFileManager("tsv");
-    private InvFileManager jsonManager = new InvFileManager("json");
-    private InvFileManager htmlManager = new InvFileManager("html");
+    public InvFileManager tsvManager = new InvFileManager("tsv");
+    public InvFileManager jsonManager = new InvFileManager("json");
+    public InvFileManager htmlManager = new InvFileManager("html");
 
     // dialog manager for dialog popups
-    private DialogManager dialogManager = new DialogManager();
+    public DialogManager dialogManager = new DialogManager();
 
 
     // FXML
@@ -122,10 +121,8 @@ public class InventoryController implements Initializable {
         inventoryView.setItems(filteredInvList);
 
         // set up search bar
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            inventoryView.setItems(filterList(inventoryData, newValue.toLowerCase()));
-        });
-
+        searchField.textProperty().addListener((observable, oldValue, newValue) ->
+                inventoryView.setItems(filterList(inventoryData, newValue.toLowerCase())));
 
     }
 
@@ -136,10 +133,8 @@ public class InventoryController implements Initializable {
     // finds a serial number or name
     private boolean searchFindsItem(Item item, String searchText){
 
-        boolean out =
-                item.getSerialNumber().toLowerCase().contains(searchText.toLowerCase()) ||
-                        item.getName().toLowerCase().contains(searchText.toLowerCase());
-        return out;
+        return item.getSerialNumber().toLowerCase().contains(searchText.toLowerCase()) ||
+                item.getName().toLowerCase().contains(searchText.toLowerCase());
     }
 
     private ObservableList<Item> filterList (ObservableList<Item> inventoryData, String search){
@@ -157,7 +152,7 @@ public class InventoryController implements Initializable {
 
     // show help
     @FXML
-    public void showHelp(ActionEvent actionEvent){
+    public void showHelp(){
         dialogManager.showDialog(dialogManager.helpText(), splitPane);
     }
 
@@ -167,7 +162,7 @@ public class InventoryController implements Initializable {
 
     // save to file
     @FXML
-    public void saveTSV(ActionEvent actionEvent){
+    public void saveTSV(){
 
         // set up data
         String dataToWrite = tsvManager.dataConverterTSV(inventoryData);
@@ -185,7 +180,7 @@ public class InventoryController implements Initializable {
     }
 
     @FXML
-    public void saveJSON(ActionEvent actionEvent){
+    public void saveJSON(){
         String dataToWrite = jsonManager.dataConverterJSON(inventoryData);
 
         Stage stage = jsonManager.windowSetup(splitPane, "save");
@@ -198,7 +193,7 @@ public class InventoryController implements Initializable {
     }
 
     @FXML
-    public void saveHTML(ActionEvent actionEvent){
+    public void saveHTML(){
         String dataToWrite = htmlManager.dataConverterHTML(inventoryData);
 
         Stage stage = htmlManager.windowSetup(splitPane, "save");
@@ -213,7 +208,7 @@ public class InventoryController implements Initializable {
     // load from file
 
     @FXML
-    public void openTSV(ActionEvent actionEvent){
+    public void openTSV(){
         // setup window
         Stage stage = tsvManager.windowSetup(splitPane, "load");
 
@@ -230,7 +225,7 @@ public class InventoryController implements Initializable {
     }
 
     @FXML
-    public void openJSON(ActionEvent actionEvent){
+    public void openJSON(){
         Stage stage = jsonManager.windowSetup(splitPane, "load");
 
         File fileToLoad = jsonManager.fileChooser.showOpenDialog(stage);
@@ -244,7 +239,7 @@ public class InventoryController implements Initializable {
     }
 
     @FXML
-    public void openHTML(ActionEvent actionEvent){
+    public void openHTML(){
         Stage stage = htmlManager.windowSetup(splitPane, "load");
 
         File fileLoad = htmlManager.fileChooser.showOpenDialog(stage);
@@ -265,14 +260,14 @@ public class InventoryController implements Initializable {
     // insertion & modification
 
     // add & delete
-    public void addItem(ActionEvent actionEvent){
+    public void addItem(){
 
         // check inputs first
 
         // value text
 
         // the value text is invalid if it contains something not a number or if its empty
-        if(!stringCheckNumbers(valueText.getText()) || valueText.getText().length() == 0){
+        if(!stringIsNumbers(valueText.getText()) || valueText.getText().length() == 0){
 
             // tell user to input valid dollar amount
             dialogManager.showDialog(dialogManager.invalidDollarAmount(), splitPane);
@@ -283,7 +278,7 @@ public class InventoryController implements Initializable {
         // serial number
 
         // serial numbers are purely alphanumeric, so check this too
-        if(!stringCheckAlphanumeric(serialNumberText.getText())){
+        if(stringIsNotAlphanumeric(serialNumberText.getText())){
 
             // tell user to input valid serial number content
             dialogManager.showDialog(dialogManager.invalidSerialString(), splitPane);
@@ -317,6 +312,22 @@ public class InventoryController implements Initializable {
             // append double zero if no decimal
             decimal += ".00";
         }
+
+        if(decimal.contains(".")){
+            // make big decimal for input; round to two places if able
+
+            // split by the first "."
+            String[] temp = decimal.split("\\.");
+
+            // truncate cents to two places
+            String cents = temp[1];
+            cents = cents.substring(0, Math.min(cents.length(), 2));
+
+            // put it back
+            decimal = temp[0] + '.' + cents;
+
+        }
+
         BigDecimal value = new BigDecimal(decimal);
 
         // setup name
@@ -335,7 +346,7 @@ public class InventoryController implements Initializable {
         updateItemView();
     }
 
-    public void delItem(ActionEvent actionEvent){
+    public void delItem(){
         // delete all highlighted tasks
         inventoryData.removeAll(
                 inventoryView.getSelectionModel().getSelectedItems()
@@ -358,15 +369,31 @@ public class InventoryController implements Initializable {
         Item item = inventoryView.getSelectionModel().getSelectedItem();
 
         // check the new input
-        if(stringCheckNumbers(editText)){
+        if(stringIsNumbers(editText)){
 
-            // check input for a decimal
+            // remove duplicate decimals if possible
+            editText = removeDuplicatePeriods(editText);
+
+
+            // append decimal if none
             if(!editText.contains(".")){
                 // append double zero if no decimal
                 editText += ".00";
             }
 
-            // make big decimal for input
+            // make big decimal for input; round to two places if able
+
+            // split by the first "."
+            String[] temp = editText.split("\\.");
+
+            // truncate cents to two places
+            String cents = temp[1];
+            cents = cents.substring(0, Math.min(cents.length(), 2));
+
+            // put it back
+            editText = temp[0] + '.' + cents;
+
+            // make big decimal
             BigDecimal input = new BigDecimal(editText);
 
             // update object
@@ -429,11 +456,10 @@ public class InventoryController implements Initializable {
         }
 
         // now check length and if alphanumeric; update serial number field if true
-        if(!stringCheckAlphanumeric(editText)){
+        if(stringIsNotAlphanumeric(editText)){
 
             // tell user input content is not accepted
             dialogManager.showDialog(dialogManager.invalidSerialString(), splitPane);
-            return;
 
         }else{
 
@@ -457,39 +483,52 @@ public class InventoryController implements Initializable {
     // input checking
 
     // checks a string if its purely alphanumeric;
-    // returns true if alphanumeric; false if not
-    public boolean stringCheckAlphanumeric(String toCheck){
+    // returns false if alphanumeric; true if not
+    public boolean stringIsNotAlphanumeric(String toCheck){
 
         // flag for checking
-        boolean flag = false;
+        boolean flag;
 
         // check if character is alphanumeric; lambda ftw
         flag = toCheck.chars().allMatch(Character::isLetterOrDigit);
 
-        return flag;
+        return !flag;
     }
 
     // checks a string if its purely numerical or a ".";
     // returns true if a string; false if not
-    public boolean stringCheckNumbers(String toCheck){
+    public boolean stringIsNumbers(String toCheck){
 
         // flag for checking
-        boolean flag = false;
+        boolean flag;
 
-        // check if character is numeric or is a '.'
-        flag = toCheck.chars().allMatch(Character::isDigit);
+        // check if input is a valid dollar string
+
+        // if they input a "."
+        if(toCheck.contains(".")){
+
+            // split by the first "."
+            String[] temp = toCheck.split("\\.");
+            String dollars = temp[0];
+            String cents = temp[1];
+
+            // check each half
+            flag = dollars.chars().allMatch(Character::isDigit) &&
+                    cents.chars().allMatch(Character::isDigit);
+
+        }else{
+            // if no ".", check whole input
+            flag = toCheck.chars().allMatch(Character::isDigit);
+        }
 
         return flag;
     }
 
+    // a theoretically  pretty fast search for really big inventory sizes
     public boolean duplicateCheck(String toCheck, boolean isName){
 
-        /*
-            theoretically a pretty fast search for really big inventory sizes
-         */
-
         // create hash set
-        HashSet<String> invSet = new HashSet();
+        HashSet<String> invSet = new HashSet<>();
 
         // add data based on requirement
         if(isName){
@@ -508,9 +547,56 @@ public class InventoryController implements Initializable {
         }
 
         // evaluate search
-        boolean out = invSet.contains(toCheck);
+        return invSet.contains(toCheck);
+    }
 
-        return out;
+    public String removeDuplicatePeriods(String editText){
+        // check input for multiple decimals
+        if(editText.contains(".")){
+
+            // make string into list
+            List<Character> textAsList = editText
+                    .chars()
+                    .mapToObj(e -> (char)e)
+                    .collect(Collectors.toList());
+
+            // index for first period
+            int first = 0;
+
+            // list of indexes to remove
+            List<Integer> indexes = new ArrayList<>();
+
+
+            // search the input for the first '.'
+            for (int i=0; i<textAsList.size(); i++){
+
+                if(textAsList.get(i).equals('.')){
+                    first = i;
+                    break;
+                }
+            }
+
+            // add the rest to the removal list
+            for(int j=first+1; j<textAsList.size(); j++){
+
+                if(textAsList.get(j).equals('.')){
+                    indexes.add(j);
+                }
+            }
+
+            // now set targets for removal
+            for (Integer i:indexes) {
+                textAsList.set(i, 'X');
+            }
+            textAsList.removeAll(Collections.singleton('X'));
+
+            // update input
+            editText = textAsList.toString()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace(", ", "");
+        }
+        return editText;
     }
 
 

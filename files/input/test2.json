@@ -1,0 +1,22 @@
+{
+"inventory":[ {
+  "value" : "$12.00",
+  "name" : "Thing",
+  "serialNumber" : "GH48YN4869"
+}, {
+  "value" : "$15.00",
+  "name" : "Thing 2",
+  "serialNumber" : "GH57364869"
+}, {
+  "value" : "$12.00",
+  "name" : "Thing 3",
+  "serialNumber" : "JOYN360246"
+}, {
+  "value" : "$34.00",
+  "name" : "Thing 4",
+  "serialNumber" : "BMXB2368HB"
+}, {
+  "value" : "$56.00",
+  "name" : "Thing 5",
+  "serialNumber" : "1104Y25364"
+} ]}

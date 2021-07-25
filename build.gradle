@@ -12,15 +12,14 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter:5.7.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-    implementation 'com.google.code.gson:gson:2.8.7'
 
     // for JSON stuff
+    implementation 'com.google.code.gson:gson:2.8.7'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
     implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1'
-
-
 }
 
 test {

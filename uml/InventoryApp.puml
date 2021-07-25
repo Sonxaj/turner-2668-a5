@@ -16,6 +16,13 @@ class InventoryApp{
 
 class InventoryController{
 
+    +InvFileManager tsvManager
+    +InvFileManager jsonManager
+    +InvFileManager htmlManager
+
+
+    +DialogManager dialogManager
+
     SplitPane splitPane
 
     TableView<Item> inventoryView;
@@ -47,31 +54,31 @@ class InventoryController{
     -boolean searchFindsItem(Item item, String searchText)
     -ObservableList<Item> filterList (ObservableList<Item> inventoryData, String search)
 
-    +showHelp(ActionEvent actionEvent)
+    +showHelp()
 
-    +saveTSV(ActionEvent actionEvent)
-    +saveJSON(ActionEvent actionEvent)
-    +saveHTML(ActionEvent actionEvent)
+    +saveTSV()
+    +saveJSON()
+    +saveHTML()
 
-    +openTSV(ActionEvent actionEvent)
-    +openJSON(ActionEvent actionEvent)
-    +openHTML(ActionEvent actionEvent)
+    +openTSV()
+    +openJSON()
+    +openHTML()
 
-    +addItem(ActionEvent actionEvent)
-    +delItem(ActionEvent actionEvent)
+    +addItem()
+    +delItem()
 
     +changeValueCellEvent(TableColumn.CellEditEvent editEvent)
     +changeNameCellEvent(TableColumn.CellEditEvent editEvent)
     +changeSerialNumCellEvent(TableColumn.CellEditEvent editEvent)
 
-    +stringCheckAlphanumeric(String toCheck)
-    +stringCheckNumbers(String toCheck)
+    +stringIsNotAlphanumeric(String toCheck)
+    +stringIsNumbers(String toCheck)
 
     +boolean duplicateCheck(String toCheck, boolean isName)
 
+    +removeDuplicatePeriods(String editText)
+
     +updateItemView()
-
-
 }
 
 class InvFileManager{

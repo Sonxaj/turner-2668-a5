@@ -8,7 +8,6 @@ package ucf.assignments;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.*;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
 import javafx.scene.control.SplitPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -16,6 +15,8 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.math.BigDecimal;
 import java.util.Scanner;
+
+
 // class responsible for all file operations
 
 public class InvFileManager {
@@ -228,10 +229,6 @@ public class InvFileManager {
         try{
             // assuming we got the file, start reading data
             Scanner reader = new Scanner(fileToLoad);
-
-            // clear current data
-            inventoryData.removeAll(inventoryData);
-            System.out.println("inventory cleared\n");
 
             // parse data
             while(reader.hasNextLine()){

@@ -37,7 +37,7 @@ public class Item {
     }
 
     public void setValue(BigDecimal value) {
-        this.value = value.toString();
+        this.value = "$" + value.toString();
     }
 
     public String getSerialNumber() {
