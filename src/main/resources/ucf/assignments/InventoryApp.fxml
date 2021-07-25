@@ -30,7 +30,7 @@
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
             <items>
-              <MenuItem fx:id="showHelp" mnemonicParsing="false" text="About" />
+              <MenuItem fx:id="showHelp" mnemonicParsing="false" onAction="#showHelp" text="About" />
             </items>
           </Menu>
         </menus>
@@ -39,7 +39,7 @@
          <children>
             <SplitMenuButton fx:id="addButton" layoutX="662.0" layoutY="9.0" mnemonicParsing="false" onAction="#addItem" prefHeight="32.0" prefWidth="127.0" text="Add Item" AnchorPane.bottomAnchor="9.0" AnchorPane.rightAnchor="19.0" AnchorPane.topAnchor="9.0">
               <items>
-                <MenuItem fx:id="delButton" mnemonicParsing="false" onAction="#delItem" text="Remove Item" />
+                <MenuItem fx:id="delButton" mnemonicParsing="false" onAction="#delItem" text="Remove Item(s)" />
               </items>
             </SplitMenuButton>
             <TextField fx:id="valueText" layoutX="20.0" layoutY="9.0" minHeight="-Infinity" minWidth="-Infinity" prefHeight="35.0" prefWidth="127.0" promptText="Value" AnchorPane.bottomAnchor="9.0" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="9.0" />

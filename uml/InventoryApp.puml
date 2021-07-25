@@ -1,0 +1,126 @@
+@startuml
+
+javafx.Application <- InventoryApp
+
+InventoryApp - InventoryController
+
+InventoryController <|-- Item
+InventoryController <|-- InvFileManager
+InventoryController <|-- DialogManager
+
+
+class InventoryApp{
+    main()
+    start()
+}
+
+class InventoryController{
+
+    SplitPane splitPane
+
+    TableView<Item> inventoryView;
+
+    TableColumn<Item, String> valueColumn;
+    TableColumn<Item, String> nameColumn;
+    TableColumn<Item, String> serialColumn;
+
+    SplitMenuButton addButton;
+
+    MenuItem delButton;
+    MenuItem openTSV;
+    MenuItem openJSON;
+    MenuItem openHTML;
+    MenuItem saveTSV;
+    MenuItem saveJSON;
+    MenuItem saveHTML;
+    MenuItem showHelp;
+
+    TextField searchField;
+    TextField valueText;
+    TextField serialNumberText;
+    TextField nameText;
+
+    -ObservableList<Item> inventoryData
+
+    +initialize(URL url, ResourceBundle rb)
+
+    -boolean searchFindsItem(Item item, String searchText)
+    -ObservableList<Item> filterList (ObservableList<Item> inventoryData, String search)
+
+    +showHelp(ActionEvent actionEvent)
+
+    +saveTSV(ActionEvent actionEvent)
+    +saveJSON(ActionEvent actionEvent)
+    +saveHTML(ActionEvent actionEvent)
+
+    +openTSV(ActionEvent actionEvent)
+    +openJSON(ActionEvent actionEvent)
+    +openHTML(ActionEvent actionEvent)
+
+    +addItem(ActionEvent actionEvent)
+    +delItem(ActionEvent actionEvent)
+
+    +changeValueCellEvent(TableColumn.CellEditEvent editEvent)
+    +changeNameCellEvent(TableColumn.CellEditEvent editEvent)
+    +changeSerialNumCellEvent(TableColumn.CellEditEvent editEvent)
+
+    +stringCheckAlphanumeric(String toCheck)
+    +stringCheckNumbers(String toCheck)
+
+    +boolean duplicateCheck(String toCheck, boolean isName)
+
+    +updateItemView()
+
+
+}
+
+class InvFileManager{
+
+    +FileChooser fileChooser;
+
+    +InvFileManager(String type)
+
+    +String dataConverterTSV(ObservableList<Item> inventoryData)
+    +String dataConverterJSON(ObservableList<Item> inventoryData)
+    +String dataConverterHTML(ObservableList<Item> inventoryData)
+
+    +saveInventory(File fileToSave, String textToSave)
+
+    +loadTSV(File fileToLoad, ObservableList<Item> inventoryData)
+    +loadJSON(File fileToLoad, ObservableList<Item> inventoryData)
+    +loadHTML(File fileToLoad, ObservableList<Item> inventoryData)
+
+    +Stage windowSetup(SplitPane splitPane, String operation)
+}
+
+class Item{
+    -String value;
+    -String name;
+    -String serialNumber;
+
+    +Item(BigDecimal value, String serialNumber, String name)
+
+    +String getValue()
+    +String getSerialNumber()
+    +String getName()
+
+    +setValue(BigDecimal value)
+    +setSerialNumber(String serialNumber)
+    +setName(String name)
+}
+
+class DialogManager{
+    +showDialog()
+
+    +String helpText()
+
+    +String invalidDollarAmount()
+    +String invalidSerialString()
+    +String invalidSerialStringLength()
+    +String invalidNameStringLength()
+
+    +String duplicateSerialNum()
+    +String duplicateName()
+}
+
+@enduml

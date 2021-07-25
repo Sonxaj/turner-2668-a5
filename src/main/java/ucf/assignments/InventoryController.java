@@ -22,10 +22,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.function.Predicate;
+import java.util.*;
 
 
 public class InventoryController implements Initializable {
@@ -34,6 +31,9 @@ public class InventoryController implements Initializable {
     private InvFileManager tsvManager = new InvFileManager("tsv");
     private InvFileManager jsonManager = new InvFileManager("json");
     private InvFileManager htmlManager = new InvFileManager("html");
+
+    // dialog manager for dialog popups
+    private DialogManager dialogManager = new DialogManager();
 
 
     // FXML
@@ -129,6 +129,8 @@ public class InventoryController implements Initializable {
 
     }
 
+
+
     // search bar
 
     // finds a serial number or name
@@ -150,6 +152,16 @@ public class InventoryController implements Initializable {
         }
         return FXCollections.observableArrayList(out);
     }
+
+
+
+    // show help
+    @FXML
+    public void showHelp(ActionEvent actionEvent){
+        dialogManager.showDialog(dialogManager.helpText(), splitPane);
+    }
+
+
 
     // file stuff
 
@@ -198,9 +210,8 @@ public class InventoryController implements Initializable {
         }
     }
 
-
-
     // load from file
+
     @FXML
     public void openTSV(ActionEvent actionEvent){
         // setup window
@@ -247,6 +258,10 @@ public class InventoryController implements Initializable {
     }
 
 
+
+
+
+
     // insertion & modification
 
     // add & delete
@@ -254,19 +269,45 @@ public class InventoryController implements Initializable {
 
         // check inputs first
 
+        // value text
+
         // the value text is invalid if it contains something not a number or if its empty
         if(!stringCheckNumbers(valueText.getText()) || valueText.getText().length() == 0){
 
             // tell user to input valid dollar amount
+            dialogManager.showDialog(dialogManager.invalidDollarAmount(), splitPane);
             return;
         }
+
+
+        // serial number
 
         // serial numbers are purely alphanumeric, so check this too
-        if(!stringCheckAlphanumeric(serialNumberText.getText()) || valueText.getText().length() == 0){
+        if(!stringCheckAlphanumeric(serialNumberText.getText())){
 
-            // tell user to input valid serial number string
+            // tell user to input valid serial number content
+            dialogManager.showDialog(dialogManager.invalidSerialString(), splitPane);
+            return;
+
+        }else if (serialNumberText.getText().length() != 10){
+
+            // tell user to input valid length
+            dialogManager.showDialog(dialogManager.invalidSerialStringLength(), splitPane);
             return;
         }
+
+
+
+        // name
+
+        // length check for name
+        if(nameText.getText().length() < 2 || nameText.getText().length() > 265){
+
+            // tell user to input string of valid length
+            dialogManager.showDialog(dialogManager.invalidNameStringLength(), splitPane);
+        }
+
+        // input
 
         // get inputs
         String decimal = valueText.getText();
@@ -304,7 +345,6 @@ public class InventoryController implements Initializable {
     }
 
 
-
     // edit events
 
     public void changeValueCellEvent(TableColumn.CellEditEvent editEvent){
@@ -319,11 +359,23 @@ public class InventoryController implements Initializable {
 
         // check the new input
         if(stringCheckNumbers(editText)){
+
+            // check input for a decimal
+            if(!editText.contains(".")){
+                // append double zero if no decimal
+                editText += ".00";
+            }
+
             // make big decimal for input
             BigDecimal input = new BigDecimal(editText);
 
             // update object
             item.setValue(input);
+
+        }else{
+            // tell user input is not a valid number
+            dialogManager.showDialog(dialogManager.invalidDollarAmount(), splitPane);
+            return;
         }
 
         // update gui
@@ -337,27 +389,27 @@ public class InventoryController implements Initializable {
         // get selected item
         Item item = inventoryView.getSelectionModel().getSelectedItem();
 
+        // first check for duplicates
+        if(duplicateCheck(editText, true)){
+
+            // scream at user
+            dialogManager.showDialog(dialogManager.duplicateName(), splitPane);
+            return;
+        }
+
         // check input for length
         if(editText.length() < 2 || editText.length() > 256){
 
             // tell user input length is not accepted
+            dialogManager.showDialog(dialogManager.invalidNameStringLength(), splitPane);
             return;
 
         }else{
 
-            // now check input content
-            if(!stringCheckAlphanumeric(editText)){
+            // update name field
+            item.setName(editText);
 
-                // tell user input content is not accepted
-                return;
-
-            }else{
-                // update name field
-                item.setName(editText);
-            }
         }
-
-        // update gui
         updateItemView();
     }
 
@@ -368,16 +420,37 @@ public class InventoryController implements Initializable {
         // get selected item
         Item item = inventoryView.getSelectionModel().getSelectedItem();
 
-        // update serial number field; check if alphanumeric
-        if(stringCheckAlphanumeric(editText)){
-            item.setSerialNumber(editText);
+        // first check for duplicates
+        if(duplicateCheck(editText, false)){
 
-        }else{
-            // tell user input is not accepted
+            // tell user duplicate not acceptable
+            dialogManager.showDialog(dialogManager.duplicateSerialNum(), splitPane);
+            return;
         }
 
-        updateItemView();
+        // now check length and if alphanumeric; update serial number field if true
+        if(!stringCheckAlphanumeric(editText)){
+
+            // tell user input content is not accepted
+            dialogManager.showDialog(dialogManager.invalidSerialString(), splitPane);
+            return;
+
+        }else{
+
+            if(editText.length() != 10){
+                // scream for bad length
+                dialogManager.showDialog(dialogManager.invalidSerialStringLength(), splitPane);
+                return;
+
+            }else{
+                item.setSerialNumber(editText);
+            }
+            updateItemView();
+        }
     }
+
+
+
 
 
 
@@ -407,6 +480,37 @@ public class InventoryController implements Initializable {
         flag = toCheck.chars().allMatch(Character::isDigit);
 
         return flag;
+    }
+
+    public boolean duplicateCheck(String toCheck, boolean isName){
+
+        /*
+            theoretically a pretty fast search for really big inventory sizes
+         */
+
+        // create hash set
+        HashSet<String> invSet = new HashSet();
+
+        // add data based on requirement
+        if(isName){
+
+            // put names in map if we're searching for names
+            for(Item i: inventoryData){
+                invSet.add(i.getName());
+            }
+
+        }else{
+
+            // put serial numbers otherwise
+            for(Item i: inventoryData){
+                invSet.add(i.getSerialNumber());
+            }
+        }
+
+        // evaluate search
+        boolean out = invSet.contains(toCheck);
+
+        return out;
     }
 
 
