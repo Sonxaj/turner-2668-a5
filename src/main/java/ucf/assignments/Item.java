@@ -25,7 +25,7 @@ public class Item {
         this.name = name;
 
         // serial number should be uppercase
-        this.serialNumber = serialNumber.toUpperCase(Locale.ROOT);
+        this.serialNumber = serialNumber.toUpperCase();
     }
 
 

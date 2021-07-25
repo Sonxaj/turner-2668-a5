@@ -7,6 +7,8 @@ package ucf.assignments;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -20,9 +22,10 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
-
+import java.util.function.Predicate;
 
 
 public class InventoryController implements Initializable {
@@ -87,6 +90,7 @@ public class InventoryController implements Initializable {
     // data
     private ObservableList<Item> inventoryData = FXCollections.observableArrayList();
 
+
     @Override
     public void initialize(URL url, ResourceBundle rb){
 
@@ -106,13 +110,45 @@ public class InventoryController implements Initializable {
 
 
         // set data
-        inventoryView.setItems(inventoryData);
+        //inventoryView.setItems(inventoryData);
 
         // resizable
         inventoryView.getColumns().get(0).prefWidthProperty().bind(inventoryView.widthProperty().multiply(0.20));
         inventoryView.getColumns().get(1).prefWidthProperty().bind(inventoryView.widthProperty().multiply(0.40));
         inventoryView.getColumns().get(2).prefWidthProperty().bind(inventoryView.widthProperty().multiply(0.40));
 
+        // create filtered list
+        FilteredList<Item> filteredInvList = new FilteredList<>(inventoryData);
+        inventoryView.setItems(filteredInvList);
+
+        // set up search bar
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            inventoryView.setItems(filterList(inventoryData, newValue.toLowerCase()));
+        });
+
+
+    }
+
+    // search bar
+
+    // finds a serial number or name
+    private boolean searchFindsItem(Item item, String searchText){
+
+        boolean out =
+                item.getSerialNumber().toLowerCase().contains(searchText.toLowerCase()) ||
+                        item.getName().toLowerCase().contains(searchText.toLowerCase());
+        return out;
+    }
+
+    private ObservableList<Item> filterList (ObservableList<Item> inventoryData, String search){
+        List<Item> out = new ArrayList<>();
+
+        for(Item item: inventoryData){
+            if(searchFindsItem(item, search)){
+                out.add(item);
+            }
+        }
+        return FXCollections.observableArrayList(out);
     }
 
     // file stuff
@@ -211,7 +247,6 @@ public class InventoryController implements Initializable {
     }
 
 
-
     // insertion & modification
 
     // add & delete
@@ -219,11 +254,7 @@ public class InventoryController implements Initializable {
 
         // check inputs first
 
-        /*
-            the value text is invalid if there's no '.' or it contains something not a number
-            or if its empty
-         */
-
+        // the value text is invalid if it contains something not a number or if its empty
         if(!stringCheckNumbers(valueText.getText()) || valueText.getText().length() == 0){
 
             // tell user to input valid dollar amount
@@ -237,14 +268,24 @@ public class InventoryController implements Initializable {
             return;
         }
 
-        // if we get here, we're good to go
         // get inputs
-        BigDecimal value = new BigDecimal(valueText.getText());
+        String decimal = valueText.getText();
+
+        // check for a decimal
+        if(!decimal.contains(".")){
+            // append double zero if no decimal
+            decimal += ".00";
+        }
+        BigDecimal value = new BigDecimal(decimal);
+
+        // setup name
         String name = nameText.getText();
-        String serialNum = serialNumberText.getText().toUpperCase(Locale.ROOT);
+
+        // serial number
+        String serialNum = serialNumberText.getText().toUpperCase();
 
         // create item
-        Item item = new Item(value, name, serialNum);
+        Item item = new Item(value, serialNum, name);
 
         // add item
         inventoryData.add(item);
@@ -364,7 +405,6 @@ public class InventoryController implements Initializable {
 
         // check if character is numeric or is a '.'
         flag = toCheck.chars().allMatch(Character::isDigit);
-        flag = toCheck.contains(".");
 
         return flag;
     }

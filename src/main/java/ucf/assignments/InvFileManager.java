@@ -84,6 +84,7 @@ public class InvFileManager {
             e.printStackTrace();
         }
 
+        // append closing brace
         out += "}";
 
         return out;
