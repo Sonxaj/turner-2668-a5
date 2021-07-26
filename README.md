@@ -35,6 +35,10 @@ then click again to switch the sorting by that value. If the **triangle** is
 facing up, the **inventory** will sort from **A-Z/least-to-greatest**. If the 
 **triangle** is facing down, the **inventory** will sort from **Z-A/greatest-to-least.**
 
+### Search Inventory
+Type in the **Search** box just under the input fields to search for an item.
+The search will find items with a matching **Name** and/or **Serial Number**.
+
 ### Save Inventory
 Click the **Export** menu option in the top left, then click to save the current
 inventory in the desired filetype. Supported filetypes are **TSV**, **JSON**, and
