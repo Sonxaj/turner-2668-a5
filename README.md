@@ -8,12 +8,14 @@ App.
 
 ### Add Item
 To add an item, first enter the details in the 3 relevant text
-boxes labeled **Value**, **Serial Number**, and **Name, then hit 
+boxes labeled **Value**, **Serial Number**, and **Name**, then hit 
 ***Add Item***.
 
 *Note:* ***Values** must only be numbers,* ***Serial Numbers** must 
 be 10 characters in length and only contain alphanumeric characters, 
 and* ***Names** must be between 2 and 256 characters inclusive.*
+
+***Additionally, duplicate items are not allowed and will not be added.***
 
 ### Remove Item(s)
 
